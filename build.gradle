@@ -2,15 +2,23 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin:'base'
 
+println("BUILD")
+
 tasks.register('generateDescriptions', Copy){
+	group = 'park'
 	from 'descriptions'
 	into layout.buildDirectory.dir("descriptions")
 	filter(ReplaceTokens, tokens: [THEME_PARK_NAME: "Yellow Grim World"])
+	doFirst {println("generateDescriptions")}
 }
 
 tasks.register('zipDescriptions', Zip){
+	group = 'park'
 	from layout.buildDirectory.dir("descriptions")
 	archiveFileName = "parkDescriptions.zip"
 	destinationDirectory = layout.buildDirectory.dir("packed")
 	dependsOn generateDescriptions
+	doFirst {println("zipDescriptions")}
 }
+
+defaultTasks 'zipDescriptions'
