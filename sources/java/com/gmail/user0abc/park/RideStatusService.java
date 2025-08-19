@@ -10,19 +10,20 @@ import java.util.Random;
 
 public class RideStatusService {
 
-    private static Random random = new Random();
-    public static void main(String[] args) {
+    private static final Random random = new Random();
+    public static void main( String[] args ) {
+        RideStatusService rideStatusService = new RideStatusService();
         validateArgs(args);
-        getRideStatus(args[0]);
+        System.out.println( rideStatusService.getRideStatus(args[0]) );
     }
 
-    private static String getRideStatus(String rideId) {
+    public String getRideStatus(String rideId) {
         List<String> statuses = readStatuses(rideId);
         return statuses.get(random.nextInt(statuses.size()));
     }
 
     private static List<String>  readStatuses(String rideId) {
-        InputStream inputStream = RideStatusService.class.getResourceAsStream(rideId + ".txt");
+        InputStream inputStream = RideStatusService.class.getClassLoader().getResourceAsStream(rideId + ".txt");
         if(inputStream == null) {
             throw new IllegalArgumentException("Invalid rideId: " + rideId);
         }
@@ -31,7 +32,7 @@ public class RideStatusService {
         String line;
         while (true) {
             try {
-                if (!((line = reader.readLine()) != null)) break;
+                if ((line = reader.readLine()) == null) break;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
