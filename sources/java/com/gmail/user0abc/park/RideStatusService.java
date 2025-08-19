@@ -1,26 +1,41 @@
 package com.gmail.user0abc.park;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class RideStatusService {
+
+    private static Random random = new Random();
     public static void main(String[] args) {
         validateArgs(args);
         getRideStatus(args[0]);
     }
 
     private static String getRideStatus(String rideId) {
-        List<Ride> rides = readStatuses(rideId);
-        return rides.get(random.nextInt(rides.size())).getStatus();
+        List<String> statuses = readStatuses(rideId);
+        return statuses.get(random.nextInt(statuses.size()));
     }
 
-    private static List<Ride>  readStatuses(String rideId) {
+    private static List<String>  readStatuses(String rideId) {
         InputStream inputStream = RideStatusService.class.getResourceAsStream(rideId + ".txt");
         if(inputStream == null) {
             throw new IllegalArgumentException("Invalid rideId: " + rideId);
         }
-        List<Ride> rides = new ArrayList<>();
+        List<String> rides = new ArrayList<>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
-        while ((line = reader.readLine()) != null) {
-            rides.add(new Ride(line));
+        while (true) {
+            try {
+                if (!((line = reader.readLine()) != null)) break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            rides.add(line);
         }
         return rides;
     }

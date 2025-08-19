@@ -27,6 +27,12 @@ sourceSets {
 	}
 }
 
+tasks.named('jar', Jar){
+	group = 'park'
+	description = 'Create a jar file for the sample project'
+	archiveFileName.set('rideStatusService.jar')
+}
+
 tasks.named('compileJava'){
 
 }
@@ -54,68 +60,6 @@ tasks.register('zipDescriptions', Zip){
 	}
 }
 
-def order = "order> "
-
-tasks.register('afterMath', Copy){
-	group = 'park'
-	order += " after-body "
-	from mathOrder
-	into layout.buildDirectory.dir("templates/after")
-	doLast {
-		order += " after-last "
-		println order
-	}
-}
-
-tasks.register('oldMath', Copy){
-	group = 'park'
-	order += " old-body "
-	from zipDescriptions
-	into layout.buildDirectory.dir("templates/old")
-	doLast {
-		order += " old-last "
-	}
-}
-
-tasks.register('preMath', Copy){
-	group = 'park'
-	order += " pre-body "
-	from oldMath
-	into layout.buildDirectory.dir("templates/pre")
-	doLast {
-		order += " pre-last "
-	}
-}
-
-tasks.register('mathOrder', Copy){
-	group = 'park'
-	from preMath
-	into layout.buildDirectory.dir("templates/math")
-	doLast {
-		order += " last "
-	}
-	doFirst {
-		order += " first "
-	}
-	order += " body "
-	finalizedBy afterMath
-}
-
-tasks.named('mathOrder', Copy){
-	order += " extra "
-	into layout.buildDirectory.dir("templates/extra")
-}
-
-tasks.named('mathOrder', Copy){
-	order += " additional "
-	into layout.buildDirectory.dir("templates/additional")
-}
-
-order += " top "
-
-defaultTasks 'zipDescriptions'
-
 tasks.named('build'){
-	dependsOn zipDescriptions
-	finalizedBy 'afterMath'
+	dependsOn zipDescriptions, jar
 }
