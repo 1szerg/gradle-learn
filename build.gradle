@@ -1,24 +1,121 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply plugin:'base'
+plugins{
+	id( 'base' )
+	id( 'java' )
+}
 
-println("BUILD")
+
+project.description = "Sample project for Gradle"
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['sources/java']
+		}
+		resources{
+			srcDirs = ['sources/resources']
+		}
+	}
+	test{
+		java{
+			srcDirs = ['tests/java']
+		}
+		resources{
+			srcDirs = ['tests/resources']
+		}
+	}
+}
+
+tasks.named('compileJava'){
+
+}
 
 tasks.register('generateDescriptions', Copy){
 	group = 'park'
-	from 'descriptions'
-	into layout.buildDirectory.dir("descriptions")
+	description = 'Generate descriptions from templates'
+	inputs.dir 'templates'
+	from 'templates'
+	into layout.buildDirectory.dir("templates")
 	filter(ReplaceTokens, tokens: [THEME_PARK_NAME: "Yellow Grim World"])
-	doFirst {println("generateDescriptions")}
+	doLast {
+		println "generateDescriptions"
+	}
 }
 
 tasks.register('zipDescriptions', Zip){
 	group = 'park'
-	from layout.buildDirectory.dir("descriptions")
+	description = 'Zip compiled descriptions into an archive'
+	from generateDescriptions
 	archiveFileName = "parkDescriptions.zip"
 	destinationDirectory = layout.buildDirectory.dir("packed")
-	dependsOn generateDescriptions
-	doFirst {println("zipDescriptions")}
+	doLast {
+		println "zipDescriptions"
+	}
 }
 
+def order = "order> "
+
+tasks.register('afterMath', Copy){
+	group = 'park'
+	order += " after-body "
+	from mathOrder
+	into layout.buildDirectory.dir("templates/after")
+	doLast {
+		order += " after-last "
+		println order
+	}
+}
+
+tasks.register('oldMath', Copy){
+	group = 'park'
+	order += " old-body "
+	from zipDescriptions
+	into layout.buildDirectory.dir("templates/old")
+	doLast {
+		order += " old-last "
+	}
+}
+
+tasks.register('preMath', Copy){
+	group = 'park'
+	order += " pre-body "
+	from oldMath
+	into layout.buildDirectory.dir("templates/pre")
+	doLast {
+		order += " pre-last "
+	}
+}
+
+tasks.register('mathOrder', Copy){
+	group = 'park'
+	from preMath
+	into layout.buildDirectory.dir("templates/math")
+	doLast {
+		order += " last "
+	}
+	doFirst {
+		order += " first "
+	}
+	order += " body "
+	finalizedBy afterMath
+}
+
+tasks.named('mathOrder', Copy){
+	order += " extra "
+	into layout.buildDirectory.dir("templates/extra")
+}
+
+tasks.named('mathOrder', Copy){
+	order += " additional "
+	into layout.buildDirectory.dir("templates/additional")
+}
+
+order += " top "
+
 defaultTasks 'zipDescriptions'
+
+tasks.named('build'){
+	dependsOn zipDescriptions
+	finalizedBy 'afterMath'
+}
