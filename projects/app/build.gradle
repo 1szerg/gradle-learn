@@ -1,0 +1,35 @@
+plugins{
+    id 'java'
+}
+
+dependencies {
+    implementation project(':statusService')
+}
+
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/java']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes (
+                'Main-Class' : 'com.gmail.user0abc.park.RideStatusApp',
+                'Class-Path' : configurations.runtimeClasspath.collect { it.name }.join(' ')
+        )
+        archivesBaseName = 'ParkApp'
+    }
+    doLast {
+        copy{
+            from layout.buildDirectory.dir('libs')
+            into layout.buildDirectory.dir('staged')
+        }
+    }
+}

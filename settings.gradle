@@ -1,3 +1,13 @@
-rootProject.name="sample"
+rootProject.name = 'sample'
 
 println("SETTINGS")
+
+// Include subprojects from the 'projects' directory
+File projectsDir = new File(rootDir, 'projects')
+projectsDir.eachDir { dir ->
+    if (new File(dir, 'build.gradle').exists()) {
+        include dir.name
+        project(":${dir.name}").projectDir = dir
+        project(":${dir.name}").name = dir.name
+    }
+}

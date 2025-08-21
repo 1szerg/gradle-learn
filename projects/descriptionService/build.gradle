@@ -1,0 +1,28 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins{
+	id( 'base' )
+}
+
+project.description = "Generate descriptions"
+
+tasks.register('generateDescriptions', Copy){
+	group = 'park'
+	description = 'Generate descriptions from templates'
+	inputs.dir 'templates'
+	from 'templates'
+	into layout.buildDirectory.dir("templates")
+	filter(ReplaceTokens, tokens: [THEME_PARK_NAME: "Yellow Grim World"])
+}
+
+tasks.register('zipDescriptions', Zip){
+	group = 'park'
+	description = 'Zip compiled descriptions into an archive'
+	from generateDescriptions
+	archiveFileName = "parkDescriptions.zip"
+	destinationDirectory = layout.buildDirectory.dir("staged")
+}
+
+tasks.named('build'){
+	dependsOn 'zipDescriptions'
+}
